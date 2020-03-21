@@ -33,24 +33,22 @@ class Route():
         self.distance = distance
         self.time = time
 
-# complete = []
 routes = []
-# times = []
-# distance = []
 
-printProgressBar(0, 10, prefix = 'Progress:', suffix = 'Complete', length = 50)
-for i in range(0, 10):
+# printProgressBar(0, 10, prefix = 'Progress:', suffix = 'Complete', length = 50)
+for i in range(0, 5):
     startTime = datetime.now()
-    process = subprocess.Popen(['./algo_tabou.exe', '5', '0', '10', 'distances_entre_villes_10.txt'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    process = subprocess.Popen(['./algo_tabou.exe', '1000', '1000', '50', 'distances_entre_villes_50.txt'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
+    # print(stdout)
     endTime = datetime.now() - startTime
     result = re.findall(r'[0-9\-]+\-\-> [0-9]{4}', str(stdout))
     bestRoute = (list(map(lambda x: re.sub('\-{3}>', '', x), result))[1]).split(" ")
-    # print(bestRoute)
+    print(bestRoute)
     routes.append(Route(bestRoute[0], int(bestRoute[1]), endTime.microseconds))
     process.terminate()
     time.sleep( 1 )
-    printProgressBar(i + 1, 10, prefix = 'Progress:', suffix = 'Complete', length = 50)
+    # printProgressBar(i + 1, 10, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
 # Routes Information
 justRoutes = list(map(lambda x : x.route, routes))
@@ -68,3 +66,6 @@ print("Average Distance : {}".format(AverageDistance))
 times = list(map(lambda x : x.time, routes))
 AverageTimes = sum(times) / len(times)
 print("Average Time it took to find a best route : {} microseconds".format(AverageTimes))
+
+sorted_routes = sorted(routes, key=lambda student: student.distance)
+print(f"best route is {sorted_routes[0].route} and distance is {sorted_routes[0].distance} and takes {sorted_routes[0].time} microseconds")
