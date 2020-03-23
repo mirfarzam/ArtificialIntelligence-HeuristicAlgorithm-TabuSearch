@@ -7,5 +7,5 @@ The Assignment of A.I. course M1 of Data Science at Polytech Nice Sophia, Workin
 just run 
 
 ```
-python3 tester.py
+python3 tester2.py
 ```
