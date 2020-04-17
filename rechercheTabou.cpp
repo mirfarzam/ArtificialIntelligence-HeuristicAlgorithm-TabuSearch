@@ -1,12 +1,18 @@
 #include "rechercheTabou.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string>
 
 using namespace std;
 
-// Initialisation des paramètres de la RechercheTabou
-// et génération de la solution initiale.
+// Initialisation des paramï¿½tres de la RechercheTabou
+// et gï¿½nï¿½ration de la solution initiale.
 // Initialisation  de la liste tabou
 rechercheTabou::rechercheTabou(int nbiter,int dt,int nv, char* nom_fichier)
 {
+  alphaTabu = 10000;
+  constantTabu = 10;
   nbiterations    = nbiter;
   iter_courante   = 0;
   duree_tabou     = dt;
@@ -15,12 +21,40 @@ rechercheTabou::rechercheTabou(int nbiter,int dt,int nv, char* nom_fichier)
   courant         = new solution(nv);
   courant->evaluer(les_distances);
 
+  meanTabuDuration = 0;
+
   list_tabou = new int*[nv];
   for(int i=0; i<nv; i++)
     {
       list_tabou[i] = new int[nv];
       for(int j=0; j<nv; j++)
 	list_tabou[i][j] = -1;
+    }
+
+    list_actions = new int*[nv];
+    for(int i=0; i<nv; i++)
+    {
+        list_actions[i] = new int[nv];
+        for(int j=0; j<nv; j++)
+            list_tabou[i][j] = 0;
+    }
+
+    list_first_city = new int[nv];
+    for(int i=0; i<nv; i++)
+    {
+        list_first_city[i] = 0;
+    }
+
+    list_second_city = new int[nv];
+    for(int i=0; i<nv; i++)
+    {
+        list_second_city[i] = 0;
+    }
+
+    list_mean_city = new double[nv];
+    for(int i=0; i<nv; i++)
+    {
+        list_mean_city[i] = 0.0;
     }
 
   cout << "La solution initiale aleatoire est   : ";
@@ -48,6 +82,30 @@ rechercheTabou::~rechercheTabou()
   delete[] list_tabou;
   delete[] list_tabou2;
   delete[] les_distances;
+}
+
+int rechercheTabou::rangeTabuDynamicDuration()
+{
+    time_t t;
+    srand((unsigned) time(&t));
+    int min_tabu = ceil(alphaTabu * 0.5 * sqrt(taille_solution));
+    int max_tabu = ceil(alphaTabu * 1.5 * sqrt(taille_solution));
+    int result = rand() % (max_tabu + 1 - min_tabu) + min_tabu;
+    return result;
+}
+
+int rechercheTabou::frequencyTabuDynamicDurationV1(int best_i, int best_j)
+{
+    double nijn = (list_actions[best_i][best_j])/taille_solution;
+    int result = constantTabu + ceil(alphaTabu * nijn);
+    return result;
+}
+
+int rechercheTabou::frequencyTabuDynamicDurationV2(int best_i)
+{
+    int nin = (list_first_city[best_i])/taille_solution;
+    int result = constantTabu + ceil(alphaTabu * nin);
+    return result;
 }
 
 void rechercheTabou::constuction_distance(int nv, char* nom_fichier)
@@ -131,17 +189,17 @@ void rechercheTabou::voisinage_2_opt(int &best_i, int &best_j)
   bool tous_tabou = true;
   best_vois = 100000;
 
-  // on séléctionne une première ville pour le mouvement
+  // on sï¿½lï¿½ctionne une premiï¿½re ville pour le mouvement
   for(int i=0;i<taille_solution;i++)
     {
-      // on séléctionne une seconde ville pour le mouvement
+      // on sï¿½lï¿½ctionne une seconde ville pour le mouvement
       for(int j=i+1;j<taille_solution;j++)
 	{
 	  if(   ((i!=0)||(j!=taille_solution-1))
 		&& ((i!=0)||(j!=taille_solution-2)) )
             {
 	      // on transforme la solution courante vers le voisin
-	      //    grâce au mouvement définit par le couple de ville
+	      //    grï¿½ce au mouvement dï¿½finit par le couple de ville
 	      courant->inversion_sequence_villes(i,j);
 	      // on estime ce voisin
 	      courant->evaluer(les_distances);
@@ -158,58 +216,58 @@ void rechercheTabou::voisinage_2_opt(int &best_i, int &best_j)
                 }
 	      // on re-transforme ce voisin en la solution courante
 	      courant->inversion_sequence_villes(i,j);
-	      // on ré-évalue la solution courante
+	      // on rï¿½-ï¿½value la solution courante
 	      courant->evaluer(les_distances);
             }
 	}
     }
 }
 
-//procédure principale de la recherche
+//procï¿½dure principale de la recherche
 solution* rechercheTabou::optimiser()
 {
   bool first            = true; // indique si c'est la premiere fois
   //         que l'on est dans un mimium local
-  bool descente         = false;// indique si la solution courzntz corresponds à une descente
-  int ameliore_solution = -1;   // indique l'iteration où l'on a amélioré la solution
-  int f_avant, f_apres;         // valeurs de la fitness avant et après une itération
+  bool descente         = false;// indique si la solution courzntz corresponds ï¿½ une descente
+  int ameliore_solution = -1;   // indique l'iteration oï¿½ l'on a amï¿½liorï¿½ la solution
+  int f_avant, f_apres;         // valeurs de la fitness avant et aprï¿½s une itï¿½ration
 
-  // La meilleure solution trouvée (= plus petit minium trouvé) à conserver
+  // La meilleure solution trouvï¿½e (= plus petit minium trouvï¿½) ï¿½ conserver
   solution* best_solution = new solution(taille_solution);
 
 
-  int best_i    = 0;            // Le couple (best_i, best_j) représente le meilleur mouvement non tabou
+  int best_i    = 0;            // Le couple (best_i, best_j) reprï¿½sente le meilleur mouvement non tabou
   int best_j    = 0;
   int best_eval = courant->fitness;
   f_avant       = 10000000;
 
-  // Tant que le nombre d'itérations limite n'est pas atteint
+  // Tant que le nombre d'itï¿½rations limite n'est pas atteint
   for(iter_courante=0; iter_courante<nbiterations; iter_courante++)
     {
       voisinage_2_opt(best_i, best_j);            // La fonction 'voisinage_2_opt' retourne le meilleur
       //   mouvement non tabou; c'est le couple (best_i, best_j)
       courant->inversion_sequence_villes(best_i, best_j);
-      //  On déplace la solution courante grâce à ce mouvement
+      //  On dï¿½place la solution courante grï¿½ce ï¿½ ce mouvement
 
-      courant->ordonner();                        // On réordonne la solution en commençant par 0
-      courant->evaluer(les_distances);            // On évalue la nouvelle solution courante
+      courant->ordonner();                        // On rï¿½ordonne la solution en commenï¿½ant par 0
+      courant->evaluer(les_distances);            // On ï¿½value la nouvelle solution courante
 
       f_apres = courant->fitness;                 // valeur de la fitness apres le mouvement
 
-      if(courant->fitness < best_eval)            // si on améliore le plus petit minimum rencontré
+      if(courant->fitness < best_eval)            // si on amï¿½liore le plus petit minimum rencontrï¿½
 	{                                           // alors on l'enregistre dans 'best_solution'
-	  best_eval = courant->fitness;           // on mets à jour 'best_eval'
+	  best_eval = courant->fitness;           // on mets ï¿½ jour 'best_eval'
 	  best_solution->copier(courant);         // on enregistre la solution corante comme best_solution
-	  best_solution->evaluer(les_distances);  // on évalue la best solution
-	  ameliore_solution = iter_courante;      // on indique que l'amélioration à eu lieu à cette itération
+	  best_solution->evaluer(les_distances);  // on ï¿½value la best solution
+	  ameliore_solution = iter_courante;      // on indique que l'amï¿½lioration ï¿½ eu lieu ï¿½ cette itï¿½ration
 	}
-      else // Si on n'est pas dans le plus petit minimum rencontré mais dans un minimum local
+      else // Si on n'est pas dans le plus petit minimum rencontrï¿½ mais dans un minimum local
 	{
-	  // Critères de détection d'un minimum local. 2 cas:
+	  // Critï¿½res de dï¿½tection d'un minimum local. 2 cas:
 	  //  1. si la nouvelle solution est + mauvaise que l'ancienne
 	  //         et que on est en train d'effectuer une descente
-	  //  2. si la nouvelle solution est identique à l'ancienne
-	  //         et que c'est la première fois que cela se produit
+	  //  2. si la nouvelle solution est identique ï¿½ l'ancienne
+	  //         et que c'est la premiï¿½re fois que cela se produit
 	  if (    ((f_avant<f_apres)&&(descente==true))
 		  || ((f_avant == f_apres)&&(first)) )
             {
@@ -221,10 +279,10 @@ solution* rechercheTabou::optimiser()
 	      first = false;
             }
 
-	  if (f_avant<=f_apres)  // la solution courente se dégrade
+	  if (f_avant<=f_apres)  // la solution courente se dï¿½grade
 	    descente = false;
 	  else
-	    descente = true;   // la solution courante s'améliore : descente
+	    descente = true;   // la solution courante s'amï¿½liore : descente
 
 	  if ((f_avant!=f_apres)&&(!first)) //
 	    first = true;
@@ -234,16 +292,25 @@ solution* rechercheTabou::optimiser()
 			
         }
 
+      int tempDuration = frequencyTabuDynamicDurationV1(best_i, best_j);
 
-      
-
-      // mise à jour de la liste tabou
-      list_tabou[best_i][best_j] = iter_courante+duree_tabou;
+      meanTabuDuration = ((meanTabuDuration * iter_courante) + tempDuration)/(iter_courante + 1);
+      // mise ï¿½ jour de la liste tabou
+      list_tabou[best_i][best_j] = iter_courante + tempDuration;
+      list_actions[best_i][best_j] = list_actions[best_i][best_j] + 1;
+      list_mean_city[best_i] = ((list_mean_city[best_i] * (list_first_city[best_i]+list_second_city[best_i])) + tempDuration)/(list_first_city[best_i]+list_second_city[best_i]+1);
+      list_mean_city[best_j] = ((list_mean_city[best_j] * (list_first_city[best_j]+list_second_city[best_j])) + tempDuration)/(list_first_city[best_j]+list_second_city[best_j]+1);
+      list_first_city[best_i] = list_first_city[best_i] + 1;
+      list_second_city[best_j] = list_second_city[best_j] + 1;
       //mise_a_jour_liste_tabou_2(courant, position);
       f_avant = f_apres; 
 
       // output: index of iteration and the optimal solution so far en C
       printf("%d\t%d\t%d\n", iter_courante, courant->fitness, best_eval);
     }
+    for(int i = 0; i < taille_solution; i++) {
+        printf("MDPC%F,", list_mean_city[i]);
+    }
+    printf("\nMean Duration : %F\n", meanTabuDuration);
   return best_solution;
 }

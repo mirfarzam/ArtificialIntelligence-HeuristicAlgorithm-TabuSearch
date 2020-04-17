@@ -23,6 +23,16 @@ public:
 	solution *courant;             // solution courante g�r�e par la RechercheTabou
 	int **list_tabou2;             // taboo solution list
 	int **list_tabou;              // list of dur�es taboo associ�es � each couple of cities
+
+	int alphaTabu;
+	int constantTabu;
+	double meanTabuDuration;
+
+	int **list_actions;
+	int *list_first_city;
+    int *list_second_city;
+    double *list_mean_city;
+
 	int **les_distances;           // matrice des distances entre les villes	                                                 // le voisinage est au sens voisinage 2-opt
 
 	// CONSTRUCTEURS
@@ -38,6 +48,9 @@ public:
 	void mise_a_jour_liste_tabou_2(solution* sol, int& position);
 	                                                 // ajout de la solution 'sol' � la position 'position'
 	                                                 //  de la liste tabou
+	int rangeTabuDynamicDuration();
+	int frequencyTabuDynamicDurationV1(int i, int j);
+	int frequencyTabuDynamicDurationV2(int i);
 };
 
 # endif
