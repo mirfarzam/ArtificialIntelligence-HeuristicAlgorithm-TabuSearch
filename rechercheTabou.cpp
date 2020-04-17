@@ -9,10 +9,11 @@ using namespace std;
 // Initialisation des param�tres de la RechercheTabou
 // et g�n�ration de la solution initiale.
 // Initialisation  de la liste tabou
-rechercheTabou::rechercheTabou(int nbiter,int dt,int nv, char* nom_fichier)
+rechercheTabou::rechercheTabou(int nbiter,int dt,int nv, int alphaT, int constantT, char* nom_fichier)
 {
-  alphaTabu = 10000;
-  constantTabu = 10;
+  alphaTabu = alphaT;
+  constantTabu = constantT;
+
   nbiterations    = nbiter;
   iter_courante   = 0;
   duree_tabou     = dt;
@@ -292,7 +293,7 @@ solution* rechercheTabou::optimiser()
 			
         }
 
-      int tempDuration = frequencyTabuDynamicDurationV1(best_i, best_j);
+      int tempDuration = frequencyTabuDynamicDurationV2(best_i);
 
       meanTabuDuration = ((meanTabuDuration * iter_courante) + tempDuration)/(iter_courante + 1);
       // mise � jour de la liste tabou

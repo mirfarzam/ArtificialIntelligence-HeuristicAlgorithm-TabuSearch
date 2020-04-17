@@ -1,0 +1,15 @@
+
+ Test number one for 50 cities, 10000 iteration, alpha 1, with constant 0
+
+Test for Tabu Search with this config: 
+	Iterations : 10000 
+	Number of Cities: 50 
+	Alpha For Tabu Duration = 1 
+	Constant For Tabu Duration = 00 : best found solution is 5644 and found in interation 48, number of solutions before coverage : 48, mean duration was : 7.3525001 : best found solution is 5644 and found in interation 48, number of solutions before coverage : 48, mean duration was : 8.622200
+ Test number one for 50 cities, 10000 iteration, alpha 1, with constant 10
+
+Test for Tabu Search with this config: 
+	Iterations : 10000 
+	Number of Cities: 50 
+	Alpha For Tabu Duration = 1 
+	Constant For Tabu Duration = 10

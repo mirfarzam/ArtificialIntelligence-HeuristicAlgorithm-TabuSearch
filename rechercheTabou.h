@@ -36,7 +36,7 @@ public:
 	int **les_distances;           // matrice des distances entre les villes	                                                 // le voisinage est au sens voisinage 2-opt
 
 	// CONSTRUCTEURS
-	rechercheTabou(int nbiter, int dt, int nv, char* nom_fichier);  // construction de la rechercheTabou
+	rechercheTabou(int nbiter, int dt, int nv, int alphaT, int constantT,  char* nom_fichier);  // construction de la rechercheTabou
 	~rechercheTabou();
 
 	// METHODES

@@ -13,27 +13,33 @@ int main(int argc, char **argv)
 // argc : nombre de parametres
 // argv : tableau contenant les parametres
 // Soit l'executable 'algo_tabou' ne prend pas d'arguments soit il prend 4 arguments :
-//   1.  nombre d'itéreation (critère d'arret de l'algo)
-//   2.  durée de la liste Tabou
+//   1.  nombre d'itï¿½reation (critï¿½re d'arret de l'algo)
+//   2.  durï¿½e de la liste Tabou
 //   3.  nombre de villes
 //   4.  nom du fichier indiquant les distances entre villes
 {
-	//initialise le générateur de nombre aléatoire
+	//initialise le gï¿½nï¿½rateur de nombre alï¿½atoire
 	Random::randomize();
 
 	// valeurs par defaut
 	int nb_iteration = 10;
 	int duree_tabou  = 0;
 	int nb_villes    = 10;
+
+	int alphaTabu = 1;
+	int constantTabu = 10;
+
 	char fileDistances[100];
 	strcpy(fileDistances,"distances_entre_villes_10.txt");
 
-	if (argc == 5)
+	if (argc == 7)
 	{
 		nb_iteration = atoi(argv[1]);
 		duree_tabou  = atoi(argv[2]);
 		nb_villes    = atoi(argv[3]);
-		strcpy(fileDistances,argv[4]);
+        alphaTabu    = atoi(argv[4]);
+        constantTabu    = atoi(argv[5]);
+		strcpy(fileDistances,argv[6]);
 	}
 	else if (argc == 1)
 	{
@@ -50,17 +56,17 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	// Intialise les paramètre de la RechercheTabou et crée la solution initiale
-	rechercheTabou algo(nb_iteration, duree_tabou, nb_villes, fileDistances);
-	//   1ier  paramètre : nombre d'itéreation (critère d'arret de l'algo)
-	//   2ième paramètre : durée de la liste Tabou
-	//   3ième paramètre : nombre de villes
-	//   4ième paramètre : fichier contenant les disantances entre les villes
+	// Intialise les paramï¿½tre de la RechercheTabou et crï¿½e la solution initiale
+	rechercheTabou algo(nb_iteration, duree_tabou, nb_villes, alphaTabu, constantTabu, fileDistances);
+	//   1ier  paramï¿½tre : nombre d'itï¿½reation (critï¿½re d'arret de l'algo)
+	//   2iï¿½me paramï¿½tre : durï¿½e de la liste Tabou
+	//   3iï¿½me paramï¿½tre : nombre de villes
+	//   4iï¿½me paramï¿½tre : fichier contenant les disantances entre les villes
 
-	// Lance la recherche avec la méthode Tabou
+	// Lance la recherche avec la mï¿½thode Tabou
 	solution* best = algo.optimiser();
-	// Affiche la meilleure solution rencontrée
-	cout << endl << "la meilleure solution rencontrée est : ";
+	// Affiche la meilleure solution rencontrï¿½e
+	cout << endl << "la meilleure solution rencontrï¿½e est : ";
 	best->afficher();
 
 	delete best;
